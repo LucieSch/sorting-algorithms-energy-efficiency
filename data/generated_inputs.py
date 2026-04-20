@@ -16,6 +16,8 @@ def generate_almost_sorted_int_array(sorted_arr):
         j = random.randint(0, n-1)
         arr[i], arr[j] = arr[j], arr[i]
 
+    return arr
+
 def generate_all_int_inputs(n, max_val=1000000, seed=None):
     base = generate_random_int_array(n, max_val, seed)
 
