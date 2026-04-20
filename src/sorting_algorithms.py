@@ -12,7 +12,7 @@ def insertion_sort(arr):
     n = len(arr)
     for i in range(1,n):
         insert_index = i
-        current_value = arr[i]
+        current_value = arr.pop(i)
 
         for j in range(i-1, -1, -1):
             if arr[j] > current_value:
