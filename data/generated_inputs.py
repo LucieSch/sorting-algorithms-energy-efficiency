@@ -29,4 +29,11 @@ def generate_all_int_inputs(n, max_val=1000000, seed=None):
     reverse_sorted_int_array = sorted(base, reverse=True)
     almost_sorted_int_array = generate_almost_sorted_int_array(sorted_int_array)
 
-    return unsorted_int_array, sorted_int_array, reverse_sorted_int_array, almost_sorted_int_array
+    datasets = {
+        "unsorted": unsorted_int_array,
+        "sorted": sorted_int_array, 
+        "reverse_sorted": reverse_sorted_int_array,
+        "almost_sorted": almost_sorted_int_array
+    }
+
+    return datasets
