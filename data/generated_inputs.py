@@ -5,8 +5,11 @@ def generate_random_int_array(n, max_val=1000000, seed=None):
     
     return [random.randint(0, max_val) for _ in range(n)]
 
-def generate_almost_sorted_int_array(sorted_arr):
+def generate_almost_sorted_int_array(sorted_arr, seed=None):
     import random
+    if seed is not None:
+        random.seed(seed)
+    
     arr = sorted_arr.copy()
     n = len(arr)
 
