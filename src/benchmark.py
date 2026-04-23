@@ -1,6 +1,7 @@
 import itertools
 import random
 import time
+import logging
 import codecarbon
 import pandas as pd
 from data.generated_inputs import generate_all_int_inputs
@@ -29,6 +30,10 @@ BASE_SEED = 42
 DATASET_SIZES = [1000, 10000, 100000]
 
 DATASET_TYPES = ["unsorted", "sorted", "reverse_sorted", "almost_sorted"]
+
+class IgnoreMultipleInstances(logging.Filter):
+    def filter(self, record):
+        return "Multiple instances of codecarbon" not in record.getMessage()
 
 def get_all_inputs(seed):
     data = {}
@@ -63,13 +68,28 @@ def run_experiment():
                 ALGORITHMS[algorithm](arr.copy())
 
                 start = time.perf_counter()
-                tracker = codecarbon.EmissionsTracker()
+                tracker = codecarbon.EmissionsTracker(
+                    measure_power_secs=1,
+                    tracking_mode="process",
+                    force_cpu_power=50,
+                    log_level="error"
+                )
+                tracker.start()
 
                 ALGORITHMS[algorithm](arr.copy())
 
                 emissions = tracker.stop()
                 end = time.perf_counter()
                 runtime = end - start
+
+                # Get energy consumption from code carbon's CSV output
+                df = pd.read_csv("/Users/lucieschwendrat/Projects/git/sorting-algorithms-energy-efficiency/emissions.csv")
+                last_row = df.iloc[-1]
+
+                cpu_energy = last_row["cpu_energy"]
+                gpu_energy = last_row["gpu_energy"]
+                ram_energy = last_row["ram_energy"]
+                energy_consumed = last_row["energy_consumed"]
 
                 batch_results.append({
                     "algorithm": algorithm,
@@ -79,7 +99,11 @@ def run_experiment():
                     "run_in_batch": repeat,
                     "seed": seed,
                     "runtime": runtime,
-                    "emissions": emissions
+                    "emissions": emissions,
+                    "cpu_energy": cpu_energy,
+                    "gpu_energy": gpu_energy,
+                    "ram_energy": ram_energy,
+                    "energy_consumed": energy_consumed
                 })
             
             global_run += 1
@@ -96,14 +120,12 @@ def run_experiment():
 
 
 def main():
-    # print("Starting the sorting algorithms benchmark...")
-    # run_experiment()
-    # print("Benchmark completed. Results saved to CSV.")
-    tracker = codecarbon.EmissionsTracker()
-    tracker.start()
-    time.sleep(20)
-    emissions = tracker.stop()
-    print(f"Emissions: {emissions} kg CO2")
+    print("Starting the sorting algorithms benchmark...")
+    logger = logging.getLogger("codecarbon")
+    logger.addFilter(IgnoreMultipleInstances())
+    
+    run_experiment()
+    print("Benchmark completed. Results saved to CSV.")
    
 
 if __name__ == "__main__":
