@@ -1,8 +1,11 @@
+import os
+os.environ["CODECARBON_NO_POWER_METRICS"] = "1"
+
 import itertools
 import random
 import time
 import logging
-import codecarbon
+from codecarbon import EmissionsTracker
 import pandas as pd
 from data.generated_inputs import generate_all_int_inputs
 from src.sorting_algorithms import bubble_sort, insertion_sort, merge_sort, quick_sort, tim_sort
@@ -17,7 +20,7 @@ ALGORITHMS = {
     "tim_sort": tim_sort
 }
 
-WAIT_TIME = 1200 # seconds
+WAIT_TIME = 120 # seconds
 
 NUM_OF_BATCHES = 4
 
@@ -27,7 +30,7 @@ TOTAL_RUNS = NUM_OF_BATCHES * REPEATS_PER_BATCH
 
 BASE_SEED = 42
 
-DATASET_SIZES = [1000, 10000, 100000]
+DATASET_SIZES = [10000, 100000]
 
 DATASET_TYPES = ["unsorted", "sorted", "reverse_sorted", "almost_sorted"]
 
@@ -67,27 +70,37 @@ def run_experiment():
                 # Warmup
                 ALGORITHMS[algorithm](arr.copy())
 
-                start = time.perf_counter()
-                tracker = codecarbon.EmissionsTracker(
+                target_time = 2
+    
+                tracker = EmissionsTracker(
+                    output_file=f"emissions_{global_run}.csv",
                     measure_power_secs=1,
                     tracking_mode="process",
                     force_cpu_power=50,
                     log_level="error"
                 )
                 tracker.start()
+                start = time.perf_counter()
+                
+                runs = 0
+                # Run the sorting algorithm multiple times to get a more stable measurement
+                while True:
+                    ALGORITHMS[algorithm](arr.copy())
+                    runs += 1
 
-                ALGORITHMS[algorithm](arr.copy())
+                    if time.perf_counter() - start >= target_time and runs >= 1:
+                        break
 
-                emissions = tracker.stop()
                 end = time.perf_counter()
+                emissions = tracker.stop()
                 runtime = end - start
+                print(f"Runtime for {algorithm} with {size} elements and {type} dataset: {runtime}, Runs: {runs}")
 
                 # Get energy consumption from code carbon's CSV output
-                df = pd.read_csv("/Users/lucieschwendrat/Projects/git/sorting-algorithms-energy-efficiency/emissions.csv")
+                df = pd.read_csv(f"emissions_{global_run}.csv")
                 last_row = df.iloc[-1]
 
                 cpu_energy = last_row["cpu_energy"]
-                gpu_energy = last_row["gpu_energy"]
                 ram_energy = last_row["ram_energy"]
                 energy_consumed = last_row["energy_consumed"]
 
@@ -98,12 +111,12 @@ def run_experiment():
                     "batch": batch,
                     "run_in_batch": repeat,
                     "seed": seed,
-                    "runtime": runtime,
-                    "emissions": emissions,
-                    "cpu_energy": cpu_energy,
-                    "gpu_energy": gpu_energy,
-                    "ram_energy": ram_energy,
-                    "energy_consumed": energy_consumed
+                    "runs": runs,
+                    "runtime": runtime / runs,
+                    "emissions_per_run": emissions / runs,
+                    "cpu_energy_per_run": cpu_energy / runs,
+                    "ram_energy_per_run": ram_energy / runs,
+                    "energy_consumed_per_run": energy_consumed / runs
                 })
             
             global_run += 1
@@ -123,7 +136,7 @@ def main():
     print("Starting the sorting algorithms benchmark...")
     logger = logging.getLogger("codecarbon")
     logger.addFilter(IgnoreMultipleInstances())
-    
+
     run_experiment()
     print("Benchmark completed. Results saved to CSV.")
    
