@@ -20,7 +20,7 @@ ALGORITHMS = {
     "tim_sort": tim_sort
 }
 
-WAIT_TIME = 120 # seconds
+WAIT_TIME = 180 # seconds
 
 NUM_OF_BATCHES = 4
 
@@ -30,7 +30,7 @@ TOTAL_RUNS = NUM_OF_BATCHES * REPEATS_PER_BATCH
 
 BASE_SEED = 42
 
-DATASET_SIZES = [10000, 100000]
+DATASET_SIZES = [1000, 10000]
 
 DATASET_TYPES = ["unsorted", "sorted", "reverse_sorted", "almost_sorted"]
 
