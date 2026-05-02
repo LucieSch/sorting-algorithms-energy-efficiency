@@ -18,6 +18,22 @@ DATASET_SIZES = [1000, 10000]
 
 DATASET_TYPES = ["unsorted", "sorted", "reverse_sorted", "almost_sorted"]
 
+ALGORITHM_COLORS = {
+    "bubble_sort": "#ffbc42",
+    "insertion_sort": "#d81159",
+    "merge_sort": "#8f2d56",
+    "quick_sort": "#218380",
+    "tim_sort": "#73d2de"
+}
+
+ALGORITHMS_MARKERS = {
+    "bubble_sort": "o",
+    "insertion_sort": "s",
+    "merge_sort": "^",
+    "quick_sort": "D",
+    "tim_sort": "X"
+}
+
 def prepare_data():
     df = pd.read_csv(RESULTS_PATH)
 
@@ -86,11 +102,67 @@ def plot_results(summary, col_mean, col_std, ylabel, title):
 
         plt.close(fig)
 
+def plot_energy_vs_runtime():
+    df = pd.read_csv(RESULTS_PATH)
+
+    df["energy_consumed_per_run"] *= 3600000
+    
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6), sharey=True, sharex=True)
+    fig.suptitle("Energy Consumption vs Runtime", fontsize=14, y=0.98)
+
+    for algorithm in ALGORITHMS:
+        subset_1000 = df[(df["algorithm"] == algorithm) & (df["size"] == 1000)]
+        subset_10000 = df[(df["algorithm"] == algorithm) & (df["size"] == 10000)]
+
+        colors = [ALGORITHM_COLORS[algorithm] for _ in range(len(subset_1000))]
+
+        ax1.scatter(
+            subset_1000["runtime"],
+            subset_1000["energy_consumed_per_run"],
+            label=ALGORITHM_NAMES[algorithm],
+            color=colors,
+            marker=ALGORITHMS_MARKERS[algorithm],
+            alpha=0.5,
+            s=100,
+            edgecolor="none"
+        )
+
+        ax2.scatter(
+            subset_10000["runtime"],
+            subset_10000["energy_consumed_per_run"],
+            label=ALGORITHM_NAMES[algorithm],
+            color=colors,
+            marker=ALGORITHMS_MARKERS[algorithm],
+            alpha=0.5,
+            s=100,
+            edgecolor="none"
+        )
+
+    for ax in [ax1, ax2]:
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+
+        ax.set_xlabel("Runtime [s]")
+
+    ax1.set_ylabel("Energy Consumption [Ws]")
+
+    handles, labels = ax1.get_legend_handles_labels()
+    fig.legend(handles, labels, title="Sorting Algorithm", loc="upper center", ncol=5, bbox_to_anchor=(0.5, 0.94), frameon=False)
+    ax1.set_title("Dataset Size 1000")
+    ax2.set_title("Dataset Size 10000")
+
+    plt.tight_layout(rect=[0, 0, 1, 0.9])
+    fig.savefig("results/plots/energy_vs_runtime.png", dpi=300, bbox_inches="tight")
+    plt.close(fig)
+
+
 def evaluate_results():
     summary = prepare_data()
 
     plot_results(summary, "mean_energy", "std_energy", "Energy Consumption [Ws]", "Mean Energy Consumption of Sorting Algorithms")
     plot_results(summary, "mean_runtime", "std_runtime", "Runtime [s]", "Mean Runtime of Sorting Algorithms")
+
+    plot_energy_vs_runtime()
 
 
 def main():
