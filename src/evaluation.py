@@ -14,8 +14,6 @@ ALGORITHM_NAMES = {
     "tim_sort": "Tim Sort"
 }
 
-DATASET_SIZES = [1000, 10000]
-
 DATASET_TYPES = ["unsorted", "sorted", "reverse_sorted", "almost_sorted"]
 
 ALGORITHM_COLORS = {
@@ -62,12 +60,23 @@ def prepare_data():
 
     return summary
 
-def plot_results(summary, col_mean, col_std, ylabel, title):
-    for size in DATASET_SIZES:
-        fig, ax = plt.subplots(figsize=(12, 6))
+def custom_fmt(x):
+    if x < 10:
+        return f"{x:.3f}"
+    elif x < 100:
+        return f"{x:.2f}"
+    else:
+        return f"{x:.1f}"
+    
 
-        x = np.arange(len(ALGORITHMS))
-        width = 0.225
+def plot_results(summary, col_mean, col_std, ylabel, title):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6), sharey=True)
+
+    x = np.arange(len(ALGORITHMS))
+    width = 0.225
+
+    for ax in [ax1, ax2]:
+        size = 1000 if ax == ax1 else 10000
 
         mean_y1 = [summary.loc[(alg, size, "unsorted"), col_mean] for alg in ALGORITHMS]
         mean_y2 = [summary.loc[(alg, size, "sorted"), col_mean] for alg in ALGORITHMS]
@@ -88,19 +97,25 @@ def plot_results(summary, col_mean, col_std, ylabel, title):
         ax.set_yscale("log")
 
         for bars in [bars1, bars2, bars3, bars4]:
-            ax.bar_label(bars, fmt="%.4f", padding=3, fontsize=7)
+            labels = [custom_fmt(bar.get_height()) for bar in bars]
+
+            ax.bar_label(bars, labels=labels, padding=3, fontsize=7)
 
         ax.set_xticks(x)
         ax.set_xticklabels([ALGORITHM_NAMES[a] for a in ALGORITHMS])
         ax.set_xlabel("Sorting Algorithm")
-        ax.set_ylabel(ylabel)
-        fig.suptitle(f"{title} for Dataset Size {size}", fontsize=14, y=0.98)
-        fig.legend(title="Dataset Type", loc="upper center", ncol=4, bbox_to_anchor=(0.5, 0.94), frameon=False)
+        if ax == ax1:
+            ax.set_ylabel(ylabel)
+        ax.set_title(f"Dataset Size {size}")
+    
+    fig.suptitle(title, fontsize=14, y=0.98)
+    handles, labels = ax1.get_legend_handles_labels()
+    fig.legend(handles, labels, title="Dataset Type", loc="upper center", ncol=4, bbox_to_anchor=(0.5, 0.94), frameon=False)
 
-        fig.tight_layout(rect=[0, 0, 1, 0.92])
-        fig.savefig(f"results/plots/{col_mean}_{size}.png", dpi=300, bbox_inches="tight")
+    fig.tight_layout(rect=[0, 0, 1, 0.92])
+    fig.savefig(f"results/plots/{col_mean}.png", dpi=300, bbox_inches="tight")
 
-        plt.close(fig)
+    plt.close(fig)
 
 def plot_energy_vs_runtime():
     df = pd.read_csv(RESULTS_PATH)
