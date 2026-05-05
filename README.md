@@ -25,3 +25,33 @@ Energy measurements were performed using CodeCarbon. However, due to compatibili
 
 This means that energy results are directly proportional to runtime and do not reflect real dynamic CPU power behavior.
 
+## Results
+
+<p align="center">
+  <img src="results/plots/mean_runtime.png" width="600"><br>
+  <em>Runtime Comparison</em>
+</p>
+
+<p align="center">
+  <img src="results/plots/mean_energy.png" width="600"><br>
+  <em>Energy Consumption Comparison</em>
+</p>
+
+<p align="center">
+  <img src="results/plots/energy_vs_runtime.png" width="600"><br>
+  <em>Energy vs Runtime</em>
+</p>
+
+Since a constant power model was used, the energy consumption graphs closely mirror the runtime results.
+
+## Limitations
+- The energy measurements are based on a **fixed power assumption** (50W) rather than real hardware measurements.
+- CodeCarbon could not access CPU-speciifc power metrics due to macOS powermetrics integration issues.
+- Energy consumption values are estimates, not precise measurements.
+- The model does not account for CPU load variation, frequency scaling, thermal effects or background processes.
+
+Therefore, conclusions about energy efficiency should be interpreted cautiously.
+
+## Key Insights
+
+## Future Work
