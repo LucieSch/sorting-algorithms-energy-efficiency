@@ -9,5 +9,19 @@ The goal is to evaluate not only computational performance but also the energy c
 - Estimating energy consumption during execution via CodeCarbon
 - Comparing trade-offs between speed and energy efficiency
 
-## Status
-Ongoing: core implementations completed; currently working on benchmarking and energy analysis.
+## Methodology
+
+This project evaluates the runtime and estimmated energy consumption of five sorting algorithms: Bubble Sort, Insertion Sort, Merge Sort, Quick Sort, and Python's built-in sort.
+
+Experiments were conducted using randomly generated integer arrays with sizes of 1,000 and 10,000 elements. Four different input data distributions were considered:
+  - Unsorted (random)
+  - Already sorted
+  - Reverse sorted
+  - Nearly sorted
+
+Each algorithm was executed on all dataset types, and both runtime and energy consumption were recorded.
+
+Energy measurements were performed using CodeCarbon. However, due to compatibility issues with macOS and powermetrics, the CPU was not automatically detected. As a workaround, a constant power consumption model of **50 watts** was assumed for all computations.
+
+This means that energy results are directly proportional to runtime and do not reflect real dynamic CPU power behavior.
+
