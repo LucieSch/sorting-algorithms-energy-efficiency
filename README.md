@@ -53,5 +53,15 @@ Since a constant power model was used, the energy consumption graphs closely mir
 Therefore, conclusions about energy efficiency should be interpreted cautiously.
 
 ## Key Insights
+- Dataset distribution had only a limited impact on runtime and estimated energy consumption, possibly due to the relatively small dataset sizes.
+- Unsorted datasets generally caused the highest runtime and energy consumption, while Bubble Sort performed worst on reverse-sorted data.
+- Tim Sort was the most efficient algorithm overall, achieving the lowest runtime and estimated energy usage.
+- Merge Sort and Quick Sort showed similar performance and energy consumption characteristics.
+- Insertion Sort and especially Bubble Sort were significantly less efficient than the other algorithms.
+- Overall, the experimental results were largely consistent with the theoretical time complexities of the algorithms.
 
 ## Future Work
+- Integrate accurate power measurements using supported hardware or external tools.
+- Test on different CPUs and operating systems.
+- Use larger datasets for scalability analysis.
+- Include additional algorithms (e.g., Heap Sort, Selection Sort).
